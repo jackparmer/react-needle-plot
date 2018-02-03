@@ -18,31 +18,58 @@ const DATA = [
   {mutData: mutData3, regions: regions3}
 ];
 
+const DARK_THEME = {
+    plot_bgcolor: 'black',
+    paper_bgcolor: 'black',
+    font: {color: 'white'},
+    yaxis: {tickcolor: 'white'}
+};
+
 class App extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
       data: mutData1,
-      regions: regions1  
+      regions: regions1,
+      theme: {},
+      events: []
     };
   }
 
-  handleChange = e => {
+  handleDataChange = e => {
     const i = Number(e.target.value);
     this.setState({
       data: DATA[i].mutData,
-      regions: DATA[i].regions
+      regions: DATA[i].regions,
     });
   }
 
+  handleThemeChange = e => {
+    const theme = e.target.value;
+    this.setState({
+      theme: theme == 'dark' ? DARK_THEME : {}
+    });
+  }
+
+  handleOnChange = e => {
+    let events = this.state.events;
+    events.unshift(JSON.stringify(e));
+    this.setState({events: events});
+  }
+
   render() {
+    const stemColor = this.state.theme === DARK_THEME ? 'white' : 'black';
     return (
     	<div>
-          <select onChange={this.handleChange}>
+          <select onChange={this.handleDataChange}>
             <option value="0">TP53</option>
             <option value="1">ENST00000557334</option>
             <option value="2">Generic</option>
+          </select>
+          <select onChange={this.handleThemeChange}>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
           </select>
 	      <MutationsNeedlePlot 
 	        x = {this.state.data.map(mut => mut.coord)}
@@ -51,14 +78,17 @@ class App extends Component {
 	        regions = {this.state.regions}
 	        xaxis = 'Position'
 	        yaxis = 'Number of mutations'
-            stemColor = 'white'
-            layout = {{
-                plot_bgcolor: 'black',
-                paper_bgcolor: 'black',
-                font: {color: 'white'},
-                yaxis: {tickcolor: 'white'}
-            }}
+            stemColor = {stemColor}
+            layout = {this.state.theme}
+            onChange= {this.handleOnChange}
 	      />
+          <div style={{marginLeft:200}}>
+            <p>Most Recent Event (click or zoom on plot):</p>
+            <textarea
+              style={{width:600, height:200, margin:'auto', fontSize:'14px'}}
+              value={this.state.events.join('\n')}>
+            </textarea>
+          </div>
 	    </div>
     );
   }
